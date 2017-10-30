@@ -17,7 +17,7 @@ public class Part {
 
     public void paint(Graphics g) {
         g.setColor(color);
-        g.fillOval(x, y, diameter, diameter);
+        g.fillOval(x - diameter / 2, y - diameter / 2, diameter, diameter);
     }
 
     int getX() {

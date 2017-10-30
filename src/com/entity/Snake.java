@@ -9,13 +9,17 @@ import java.util.ArrayList;
 
 public class Snake extends Unit {
 
-    Controller controller;
-    ArrayList<Part> body;
-    int direction, width, height;
+    private Controller controller;
+    private ArrayList<Part> body;
+    private int direction, width, height;
+    private boolean foodIsEaten;
+    private int sleepTime;
+    private boolean gameOver;
 
-    public Snake(int x, int y, int length, int direction, int width, int height, Controller controller) {
+    public Snake(int x, int y, int length, int sleepTime, int direction, int width, int height, Controller controller) {
         this.controller = controller;
         this.direction = direction;
+        this.sleepTime = sleepTime;
         this.width = width;
         this.height = height;
         body = new ArrayList<>();
@@ -26,7 +30,7 @@ public class Snake extends Unit {
         body.add(new Part(x - body.size() * Renderer.MY_SCALE, y, Controller.SNAKE_TAIL_DIVIDER, Controller.DEFAULT_COLOR));
     }
 
-    boolean isInsideSnake(int x, int y) {
+    private boolean isBitedItself(int x, int y) {
         for (Part part : body) {
             if ((part.getX() == x) && (part.getY() == y)) {
                 return true;
@@ -37,14 +41,12 @@ public class Snake extends Unit {
 
     @Override
     public void run() {
-        while (true) {
+        while (!gameOver) {
             move();
-            controller.repaint();
+            controller.getRenderer().getCanvas().repaint();
             try {
-                Thread.sleep(120);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {}
         }
 
     }
@@ -61,17 +63,25 @@ public class Snake extends Unit {
             x-=Renderer.MY_SCALE;
         if (direction == Controller.UP)
             y-=Renderer.MY_SCALE;
-        if (x >= width * Renderer.MY_SCALE)
-            x = 0;
+        if (x > width * Renderer.MY_SCALE)
+            x = controller.getStartSnakeX();
         if (x < 0)
-            x = width * Renderer.MY_SCALE - 1;
-        if (y >= height * Renderer.MY_SCALE)
-            y = 0;
+            x = width * Renderer.MY_SCALE - Renderer.MY_SCALE / 2;
+        if (y > height * Renderer.MY_SCALE)
+            y = controller.getStartSnakeY();
         if (y < 0)
-            y = height * Renderer.MY_SCALE - 1;
+            y = height * Renderer.MY_SCALE - Renderer.MY_SCALE / 2;
+        if (isBitedItself(x, y))
+            controller.stop();
         addHead(x, y);
-        moveBody();
-        body.remove(1);
+        hasEaten(controller.getFrogs());
+        if (foodIsEaten) {
+            body.set(1, new Part(body.get(1).getX(), body.get(1).getY(), Controller.SNAKE_BODY_AND_FROG_DIVIDER, Controller.DEFAULT_COLOR));
+            foodIsEaten = false;
+        } else {
+            moveBody();
+            body.remove(1);
+        }
 
     }
 
@@ -130,6 +140,25 @@ public class Snake extends Unit {
             }
         }
     }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+    public void hasEaten(ArrayList<Frog> frogs) {
+        int x = body.get(0).getX();
+        int y = body.get(0).getY();
+        for (Frog frog : frogs) {
+            if ((x == frog.getPart().getX()) && (y == frog.getPart().getY())) {
+                foodIsEaten = true;
+                frog.setEaten(true);
+                controller.replaceFrog(frog, frog.getThread());
+                controller.increaseScore();
+            }
+        }
+    }
+
+
 
 
 }

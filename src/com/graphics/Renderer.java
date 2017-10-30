@@ -1,7 +1,6 @@
 package com.graphics;
 
 import com.Controller;
-import com.entity.Snake;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,22 +9,20 @@ public class Renderer extends JFrame {
 
     private Controller controller;
     private MyCanvas canvas;
+    private JLabel score;
     private String title = "My cool snake";
     private int additionalHeight = 54;
     private int additionalWidth = 6;
     public static final int MY_SCALE = 30;
 
-    private int myWidth; //min 7
-    private int myHeight; //min 1
+    private boolean StartPressed;
 
 
-    public Renderer(Controller controller, int width, int height, Snake snake) {
+    public Renderer(Controller controller, int width, int height) {
         this.controller = controller;
-        this.myWidth = width;
-        this.myHeight = height;
 
-        canvas = new MyCanvas(MY_SCALE, width, height, snake);
-        canvas.setSize(myWidth * MY_SCALE, myHeight * MY_SCALE);
+        canvas = new MyCanvas(MY_SCALE, width, height);
+        canvas.setSize(width * MY_SCALE, height * MY_SCALE);
         canvas.setBackground(Color.black);
 
         setTitle(title);
@@ -49,9 +46,10 @@ public class Renderer extends JFrame {
         controlPanel.setLayout(new GridLayout());
 
         JButton startButton = new JButton("START");
-        //startButton.addActionListener(controller);
+        startButton.addActionListener(controller);
         JButton stopButton = new JButton("STOP");
-        JLabel score = new JLabel("0");
+        stopButton.addActionListener(controller);
+        score = new JLabel();
 
         controlPanel.add(score);
         controlPanel.add(startButton);
@@ -60,16 +58,19 @@ public class Renderer extends JFrame {
         add(controlPanel, BorderLayout.SOUTH);
     }
 
-    public int getMyWidth() {
-        return myWidth;
-    }
-
-    public int getMyHeight() {
-        return myHeight;
-    }
-
     public MyCanvas getCanvas() {
         return canvas;
     }
 
+    public JLabel getScore() {
+        return score;
+    }
+
+    public boolean isStartPressed() {
+        return StartPressed;
+    }
+
+    public void setStartPressed(boolean startPressed) {
+        StartPressed = startPressed;
+    }
 }
